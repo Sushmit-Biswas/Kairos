@@ -1,9 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { mockTasks, mockActivityFeed, getTimeRemaining } from '@/lib/mock-data';
 
 export default function Dashboard() {
+  const { data: session } = useSession();
   const [tasks, setTasks] = useState(mockTasks);
+  const [googleData, setGoogleData] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [, setTick] = useState(0);
 
   // Update countdowns every 30 seconds
@@ -11,6 +15,23 @@ export default function Dashboard() {
     const interval = setInterval(() => setTick(t => t + 1), 30000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch real Google data when logged in
+  useEffect(() => {
+    if (!session?.accessToken) return;
+    setLoading(true);
+    fetch('/api/google-data', {
+      headers: { Authorization: `Bearer ${session.accessToken}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.error) {
+          setGoogleData(data);
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [session]);
 
   const criticalCount = tasks.filter(t => t.priority === 'critical').length;
   const highCount = tasks.filter(t => t.priority === 'high').length;
@@ -24,6 +45,36 @@ export default function Dashboard() {
         <h2>Mission Control</h2>
         <p>Real-time overview of your deadlines, risks, and agent activity</p>
       </div>
+
+      {/* Google Data Banner */}
+      {session && googleData && (
+        <div className="glass-card" style={{ marginBottom: 24, borderLeft: '3px solid var(--accent2)', padding: '16px 20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+            <span style={{ fontSize: 20 }}>🔗</span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent2)' }}>Live Google Data Connected</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Fetched at {new Date(googleData.fetchedAt).toLocaleTimeString()}</div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+            <span className="badge badge-accent">📅 {googleData.calendar?.length || 0} Calendar Events</span>
+            <span className="badge badge-success">📧 {googleData.emails?.length || 0} Recent Emails</span>
+            <span className="badge badge-warning">🚨 {googleData.deadlineEmails?.length || 0} Deadline Emails</span>
+            <span className="badge badge-accent">✅ {googleData.tasks?.length || 0} Tasks</span>
+          </div>
+        </div>
+      )}
+
+      {loading && (
+        <div className="glass-card" style={{ marginBottom: 24, padding: '20px', textAlign: 'center' }}>
+          <div className="typing-indicator" style={{ justifyContent: 'center' }}>
+            <span /><span /><span />
+          </div>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 8 }}>
+            🔍 Scout Agent scanning your Gmail, Calendar, and Tasks...
+          </div>
+        </div>
+      )}
 
       {/* Stats Row */}
       <div className="grid-4" style={{ marginBottom: 24 }}>
@@ -53,9 +104,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Kairos Score + Task List */}
       <div className="grid-2" style={{ gridTemplateColumns: '1fr 340px', marginBottom: 24 }}>
-        {/* Task List */}
+        {/* Task List + Real Data */}
         <div>
           <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Active Tasks — Sorted by Risk</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -63,11 +113,90 @@ export default function Dashboard() {
               <TaskCard key={task.id} task={task} />
             ))}
           </div>
+
+          {/* Real Calendar Events */}
+          {googleData?.calendar?.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>📅 Upcoming Calendar Events</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {googleData.calendar.map(event => (
+                  <div key={event.id} className="glass-card" style={{ padding: '14px 18px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 600 }}>{event.title}</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                          {new Date(event.start).toLocaleString()} {event.location ? `• ${event.location}` : ''}
+                        </div>
+                      </div>
+                      <span className="badge badge-accent">Calendar</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Real Deadline Emails */}
+          {googleData?.deadlineEmails?.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>🚨 Emails with Deadline Keywords</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {googleData.deadlineEmails.map(email => (
+                  <div key={email.id} className="glass-card" style={{ padding: '14px 18px', borderLeft: '3px solid var(--danger)' }}>
+                    <div style={{ fontSize: 14, fontWeight: 600 }}>{email.subject}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>
+                      From: {email.from} • {email.date}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 6 }}>{email.snippet}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Real Google Tasks */}
+          {googleData?.tasks?.length > 0 && (
+            <div style={{ marginTop: 24 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>✅ Google Tasks</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {googleData.tasks.map(task => (
+                  <div key={task.id} className="glass-card" style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: 18 }}>{task.status === 'completed' ? '✅' : '⬜'}</span>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 600, textDecoration: task.status === 'completed' ? 'line-through' : 'none', color: task.status === 'completed' ? 'var(--text-muted)' : 'var(--text-primary)' }}>{task.title}</div>
+                      {task.due && <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Due: {new Date(task.due).toLocaleDateString()}</div>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column — Kairos Score + Feed */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <KairosScoreCard score={totalRisk > 60 ? 42 : 78} />
+
+          {/* Real Emails Feed */}
+          {googleData?.emails?.length > 0 && (
+            <div className="glass-card">
+              <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>📧</span> Recent Emails
+              </h3>
+              <div className="activity-feed">
+                {googleData.emails.slice(0, 8).map(email => (
+                  <div className="activity-item" key={email.id}>
+                    <span className="activity-icon">{email.isUnread ? '🔵' : '⚪'}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email.subject}</div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email.from}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="glass-card" style={{ flex: 1 }}>
             <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span>🤖</span> Agent Activity
