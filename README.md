@@ -8,7 +8,7 @@ An autonomous, multi-agent productivity platform that doesn't just remind you ab
 
 **Problem Statement:** PS1 — The Last-Minute Life Saver
 
-[Live Demo](https://kairos-1009107886495.asia-south1.run.app) | [Submission Doc](#)
+[Live Demo](https://kairos-1009107886495.asia-south1.run.app) | [Submission Doc](https://docs.google.com/document/d/1ja_e4E2MtlvtZt_DojYL6hicDwxJy_8PYl2dWGz3vbI/edit?usp=sharing)
 
 </div>
 
