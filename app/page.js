@@ -237,7 +237,7 @@ function TaskCard({ task }) {
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div className={`countdown ${timeLeft.urgent ? 'urgent' : ''}`}>
+          <div className={`countdown ${timeLeft.urgent ? 'urgent' : ''}`} suppressHydrationWarning>
             {timeLeft.text}
           </div>
           <div className={`risk-gauge ${riskClass}`}>
