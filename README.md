@@ -1,36 +1,206 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
 
-## Getting Started
+# Kairos
 
-First, run the development server:
+### The AI Crisis Manager That Acts Before You Panic
+
+An autonomous, multi-agent productivity platform that doesn't just remind you about deadlines — it intervenes to save them. Built with Next.js, Gemini 2.0, and the Google Workspace API suite.
+
+**Problem Statement:** PS1 — The Last-Minute Life Saver
+
+[Live Demo](https://kairos-1009107886495.asia-south1.run.app) | [Submission Doc](#)
+
+</div>
+
+---
+
+## The Problem
+
+Every productivity app on the market does the same thing: it shows you a list and sends you a notification. But notifications don't prevent missed deadlines — **action** does.
+
+The gap between "I was reminded" and "I actually did something about it" is where every existing solution fails. Kairos exists to close that gap.
+
+## The Solution
+
+Kairos is not a to-do list. It is an **autonomous agent swarm** that monitors your Google Workspace in real-time, detects approaching crises, and takes action on your behalf — drafting emails, rescheduling meetings, decomposing overwhelming tasks, and shielding you from distractions — all before you even realize you're falling behind.
+
+The user doesn't manage Kairos. Kairos manages the user.
+
+---
+
+## Architecture
+
+```
+                         +------------------+
+                         |   Google OAuth   |
+                         |   (NextAuth.js)  |
+                         +--------+---------+
+                                  |
+                    +-------------v--------------+
+                    |     Next.js Application     |
+                    |   (App Router / React 19)   |
+                    +--+-------+-------+-------+--+
+                       |       |       |       |
+              +--------v--+ +--v------+ +-----v--------+
+              | Gmail API | | Calendar| | Tasks API    |
+              | (readonly)| |   API   | | (read/write) |
+              +-----------+ +---------+ +--------------+
+                       |       |       |
+                    +--v-------v-------v--+
+                    |   Context Aggregator |
+                    |   (Risk Scoring)     |
+                    +----------+----------+
+                               |
+              +----------------v-----------------+
+              |        Gemini 2.0 Flash          |
+              |    (Multi-Agent Orchestrator)     |
+              +--+------+------+------+----------+
+                 |      |      |      |
+           +-----v+ +---v--+ +v-----+ +v--------+
+           | Scout| |Strat.| |Negot.| |Guardian |
+           +------+ +------+ +------+ +---------+
+```
+
+### The Four Agents
+
+| Agent | Role | Autonomous Actions |
+|-------|------|--------------------|
+| **Scout** | Deadline Hunter | Scans Gmail for implicit deadlines ("Need this by EOD"), cross-references with Calendar and Tasks, assigns risk scores |
+| **Strategist** | Task Decomposer | Breaks large tasks into sub-tasks with time estimates, creates optimal calendar blocks, identifies scheduling conflicts |
+| **Negotiator** | Stakeholder Manager | Drafts professional deadline extension emails, prepares status updates, manages communication tone |
+| **Guardian** | Focus Protector | Monitors for procrastination patterns, recommends Ghost Mode activation, calculates the financial and professional cost of delay |
+
+---
+
+## Key Features
+
+### Mission Control Dashboard
+A real-time command center displaying all active tasks sorted by risk score (0-100), live Google Workspace data (Calendar events, Gmail threads, Tasks), a Kairos productivity health score, and a live agent activity feed showing what each agent has done in the last hour.
+
+### Autonomous Approvals Queue
+The critical differentiator. Kairos agents do not wait for instructions. They autonomously draft emails, reschedule meetings, and prepare action items. These are placed in an Approvals Queue where the user can review and execute them with a single click. This is true agentic behavior — the AI does the work, the human approves it.
+
+### Command Center Chat (with Voice Input)
+A conversational interface powered by Gemini 2.0 that goes beyond Q&A. When you say "I'm behind on my report," Kairos doesn't just sympathize — it immediately calculates your risk score, breaks down remaining work into timed sub-tasks, blocks your calendar, and offers to draft a backup extension email. Supports voice input via the Web Speech API for zero-friction crisis reporting.
+
+### Ghost Mode
+A one-click deep work protocol. When activated, Kairos autonomously sets Google Calendar to "Do Not Disturb," enables a Gmail auto-responder, mutes all non-critical notifications, opens required documents, and starts a focus timer. The Guardian agent monitors for distractions and intervenes if the user breaks focus.
+
+### AI Morning Briefing
+A daily crisis report generated by the agent swarm, delivered via text-to-speech (Web Speech Synthesis API). Categorizes tasks into "Critical — Requires Immediate Action" and "Upcoming — Preparation Required," calculates procrastination costs in real currency, and ends with a strategic recommendation for the day.
+
+### Procrastination Cost Engine
+Every task displays its real cost of delay. Missing the credit card payment costs Rs. 500 in late fees. Every 30 minutes of delay on the marketing report increases deadline miss probability by 20 percent. This psychological nudge converts passive awareness into urgent action.
+
+---
+
+## Google Technologies Used
+
+| Technology | Usage |
+|-----------|-------|
+| **Google Cloud Run** | Containerized deployment (Dockerfile, standalone Next.js output) |
+| **Gemini 2.0 Flash** | Core reasoning engine for all four agents, chat responses, briefing generation, and task decomposition |
+| **Google OAuth 2.0** | Secure authentication via NextAuth.js |
+| **Gmail API** | Read-only inbox scanning for deadline keywords ("ASAP", "EOD", "urgent"), sender context extraction |
+| **Google Calendar API** | Event fetching, conflict detection, focus block creation |
+| **Google Tasks API** | Task synchronization, completion tracking, sub-task management |
+
+---
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **Language:** JavaScript (React 19)
+- **AI:** Google Gemini 2.0 Flash via `@google/generative-ai`
+- **Auth:** NextAuth.js with Google OAuth 2.0
+- **Styling:** Custom CSS design system (no framework dependencies)
+- **Voice:** Web Speech API (input) + Speech Synthesis API (output)
+- **Deployment:** Docker + Google Cloud Run
+- **Design:** System-adaptive theme (automatic light/dark mode)
+
+---
+
+## Local Development
+
+```bash
+git clone https://github.com/Sushmit-Biswas/Kairos.git
+cd Kairos
+npm install
+```
+
+Create a `.env.local` file:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+GOOGLE_CLIENT_SECRET=your_google_oauth_client_secret
+NEXTAUTH_SECRET=your_nextauth_secret
+NEXTAUTH_URL=http://localhost:3000
+```
+
+Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deployment
 
-## Learn More
+The application is containerized and deployed on Google Cloud Run.
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+docker build -t kairos .
+docker run -p 3000:3000 kairos
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Cloud Run automatically builds from the `main` branch via Cloud Build triggers.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Security
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- All Google API integrations use read-only scopes (`gmail.readonly`, `calendar.readonly`, `tasks.readonly`)
+- No user data is stored server-side; all context is session-scoped
+- OAuth tokens are managed by NextAuth.js with secure HTTP-only cookies
+- Environment variables are injected via Cloud Run secrets, never committed to source
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Project Structure
+
+```
+kairos/
+  app/
+    page.js              # Mission Control Dashboard
+    chat/page.js         # Command Center Chat (with Voice)
+    agents/page.js       # Agent Swarm Visualization
+    ghost/page.js        # Ghost Mode Deep Work Protocol
+    briefing/page.js     # AI Morning Briefing
+    approvals/page.js    # Autonomous Approvals Queue
+    api/
+      auth/[...nextauth] # Google OAuth handler
+      chat/              # Gemini chat API with retry logic
+      google-data/       # Google Workspace data aggregator
+    globals.css          # Design system (light/dark adaptive)
+  lib/
+    gemini.js            # Multi-agent Gemini orchestrator
+    gmail.js             # Gmail API integration
+    calendar.js          # Calendar API integration
+    tasks.js             # Tasks API integration
+    mock-data.js         # Demo data for presentations
+  components/
+    SidebarClient.js     # Navigation and auth state
+  Dockerfile             # Production container (Node 20 Alpine)
+```
+
+---
+
+<div align="center">
+
+Built for the Coding Ninjas x Google for Developers VIBE2SHIP 2026 Hackathon
+
+</div>
