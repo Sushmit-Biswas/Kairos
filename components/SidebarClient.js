@@ -1,6 +1,7 @@
 'use client';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
+import ThemeToggle from './ThemeToggle';
 
 export default function SidebarClient() {
   const { data: session, status } = useSession();
@@ -53,6 +54,8 @@ export default function SidebarClient() {
           </button>
         )}
       </div>
+
+      <ThemeToggle />
 
       <nav className="sidebar-nav">
         <div className="nav-section-label">Command Center</div>

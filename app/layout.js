@@ -10,12 +10,28 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            try {
+              var saved = localStorage.getItem('kairos-theme') || 'system';
+              var theme;
+              if (saved === 'system') {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+              } else {
+                theme = saved;
+              }
+              document.documentElement.setAttribute('data-theme', theme);
+            } catch(e) {
+              document.documentElement.setAttribute('data-theme', 'dark');
+            }
+          })();
+        `}} />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         <Providers>
           <div className="app-layout">
             <SidebarClient />
